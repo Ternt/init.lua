@@ -29,6 +29,7 @@ return {
                 "lua_ls",
                 "rust_analyzer",
                 "gopls",
+                "eslint",
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -65,6 +66,11 @@ return {
                                 }
                             }
                         }
+                    }
+                end,
+                ["eslint"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.eslint.setup {
                     }
                 end,
             }
