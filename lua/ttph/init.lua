@@ -1,5 +1,5 @@
 require("ttph.opts")
-require("ttph.remaps")
+require("ttph.maps")
 require("ttph.lazy")
 
 
@@ -25,7 +25,7 @@ autocmd('BufEnter', {
     callback = function()
         -- if vim.bo.filetype == "zig" then
         --     vim.cmd.colorscheme("tokyonight-night")
-        vim.cmd.colorscheme("moonfly")
+        vim.cmd.colorscheme("jellybeans")
     end
 })
 
