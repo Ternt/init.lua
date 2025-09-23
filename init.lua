@@ -1,5 +1,7 @@
+require('utils')
 require('opts')
 require('maps')
-require('pckg')
+require('plugins')
+require('commands')
 
-local colors = require('colors').paint('zenbones')
+local colors = require('colors').paint('raddbg')

@@ -19,8 +19,3 @@ map('n', '<C-h>', '<C-W>h', { noremap = true })
 map('n', '<C-l>', '<C-W>l', { noremap = true })
 map('n', '<C-k>', '<C-W>k', { noremap = true })
 map('n', '<C-j>', '<C-W>j', { noremap = true })
-
--- Comment
-map("n", "<leader>/", "gcc", { desc = "toggle comment", remap = true })
-map("v", "<leader>/", "gc", { desc = "toggle comment", remap = true })
-

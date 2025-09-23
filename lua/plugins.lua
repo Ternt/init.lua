@@ -23,6 +23,12 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 local plugin_specs = {
+    -- which-key
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+    },
+
     -- treesitter
     {
         "nvim-treesitter/nvim-treesitter",
@@ -56,6 +62,15 @@ local plugin_specs = {
         end
     },
 
+    -- autocompletes
+    -- {
+    --     'm4xshen/autoclose.nvim',
+    --     config = function()
+    --         require('autoclose').setup({
+    --         })
+    --     end
+    -- },
+
     -- oil
     {
         'stevearc/oil.nvim',
@@ -82,7 +97,7 @@ local plugin_specs = {
     --         require('configs.ibl').setup()
     --     end
     -- },
-    
+
     -- colorschemes 
     { 'nyoom-engineering/oxocarbon.nvim', priority = 1000, },
 

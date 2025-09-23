@@ -1,18 +1,17 @@
 
-vim.opt.laststatus = 3
 vim.opt.showmode = false
 
-vim.opt.nu = true
-vim.opt.relativenumber = true
+vim.opt.number = true           -- Show line number
+vim.opt.relativenumber = true   -- Relative line numbers
 
 vim.opt.smartindent = true
 vim.opt.wrap = false
 
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2             -- Number of spaces tabs count for
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
-vim.opt.softtabstop = 4
+vim.opt.softtabstop = 2
 vim.opt.smartindent = true
 
 vim.opt.swapfile = false
@@ -40,6 +39,9 @@ vim.opt.updatetime = 250
 vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+vim.makeprg=nmake
+
 
 -- disable some default providers
 vim.g.loaded_node_provider = 0
