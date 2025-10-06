@@ -1,21 +1,31 @@
+local map = vim.keymap.set
+local del = vim.keymap.del
+local api = vim.api
+
 vim.g.mapleader = " "
 
-local map = vim.keymap.set
+map("",  "<S-j>",   "}",        { noremap = true })
+map("",  "<S-k>",   "{",        { noremap = true })
+map("",  "<S-l>",   "<End>",    { noremap = true })
+map("",  "<S-h>",   "<Home>",   { noremap = true })
 
-map("i", "<C-b>", "<ESC>^i", { desc = "move beginning of line" })
-map("i", "<C-e>", "<End>", { desc = "move end of line" })
-map("i", "<C-h>", "<Left>", { desc = "move left" })
-map("i", "<C-l>", "<Right>", { desc = "move right" })
-map("i", "<C-j>", "<Down>", { desc = "move down" })
-map("i", "<C-k>", "<Up>", { desc = "move up" })
+map("",   "<C-j>",   ":wincmd j<CR>")
+map("",   "<C-k>",   ":wincmd k<CR>")
+map("",   "<C-l>",   ":wincmd l<CR>")
+map("",   "<C-h>",   ":wincmd h<CR>")
 
-map("n", "<C-h>", "<C-w>h", { desc = "switch window left" })
-map("n", "<C-l>", "<C-w>l", { desc = "switch window right" })
-map("n", "<C-j>", "<C-w>j", { desc = "switch window down" })
-map("n", "<C-k>", "<C-w>k", { desc = "switch window up" })
+api.nvim_create_autocmd('TextYankPost', {
+  group = api.nvim_create_augroup('custom-highlight-yank', { clear = false }),
+  callback = function()
+    vim.highlight.on_yank()
+  end
+})
 
--- remapping pane motions
-map('n', '<C-h>', '<C-W>h', { noremap = true })
-map('n', '<C-l>', '<C-W>l', { noremap = true })
-map('n', '<C-k>', '<C-W>k', { noremap = true })
-map('n', '<C-j>', '<C-W>j', { noremap = true })
+api.nvim_create_autocmd('TermOpen', {
+  group = api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.opt.number = false
+    vim.opt.relativenumber = false
+  end
+})
+
