@@ -55,7 +55,23 @@ local plugin_specs = {
     config = function()
       require('cfg.colors').setup()
     end
-  }
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build  = ":TSUpdate",
+    config = function()
+      require('cfg.treesitter').setup()
+    end
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    after = "nvim-treesitter",
+    config = function()
+      require('cfg.treesitter-context').setup()
+    end
+  },
 }
 
 require("lazy").setup({

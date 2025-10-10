@@ -5,12 +5,15 @@ o.numberwidth       = 4             -- width of number line
 o.wrap              = false
 o.termguicolors     = true
 
--- [[ text editing features ]]
+-- [[ text editing ]]
 o.number            = true          -- number line
 o.relativenumber    = true          -- relative number line
 o.cursorline        = false         -- cursor line
 o.splitbelow        = true
 o.splitright        = true
+vim.opt.swapfile    = false
+vim.opt.backup      = false
+vim.opt.undofile    = true
 
 -- [[ identation and tabstops ]]
 o.autoindent        = true          -- insert indents automatically
@@ -22,8 +25,11 @@ o.expandtab         = true          -- expand tabs out to spaces
 
 -- [[ search ]]
 o.smartcase         = true          -- ignores casing when pattern is all lowercase
-o.hlsearch          = true          -- highlight all matches
-o.incsearch         = false         -- highlight patterns during typing
+o.hlsearch          = false         -- highlight all matches
+o.incsearch         = true          -- highlight patterns during typing
+
+-- [[ gui options ]]
+o.guicursor         = "n-v-c-ve:block,i-ci:hor20"
 
 -- [[ neovide configuration ]]
 local g = vim.g
