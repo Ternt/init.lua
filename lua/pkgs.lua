@@ -17,69 +17,10 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-local plugin_specs = {
-
-  {
-    'nvim-telescope/telescope.nvim', 
-    tag = '0.1.8',
-    dependencies = 
-    { 
-      { 'nvim-lua/plenary.nvim' }, 
-      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release' }, 
-    },
-    config = function()
-      require('cfg.telescope').setup()
-    end
-  },
-
-  {
-    'ThePrimeagen/harpoon',
-    branch = 'harpoon2',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-    config = function()
-      require('cfg.harpoon').setup()
-    end
-  },
-
-  {
-    'stevearc/oil.nvim',
-    dependencies = { { 'nvim-mini/mini.icons', opts = {} } },
-    lazy = false,
-    config = function()
-      require('cfg.oil').setup()
-    end
-  },
-  
-  {
-    "rktjmp/lush.nvim",
-    config = function()
-      require('cfg.colors').setup()
-    end
-  },
-
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build  = ":TSUpdate",
-    config = function()
-      require('cfg.treesitter').setup()
-    end
-  },
-
-  {
-    "nvim-treesitter/nvim-treesitter-context",
-    after = "nvim-treesitter",
-    config = function()
-      require('cfg.treesitter-context').setup()
-    end
-  },
-}
-
-require("lazy").setup({
-  spec = plugin_specs,
+require("lazy").setup("plugins", {
   install = { missing = false },
   change_detection = { enabled = true, notify = false },
   rocks = { enabled = false },
-  defaults = { lazy = false },
   performance = {
     rtp = {
       disabled_plugins = {
@@ -93,24 +34,31 @@ require("lazy").setup({
       },
     },
   },
+  defaults = { lazy = false },
   ui = {
     backdrop = 100,
     border = "solid",
     title = "Lazy",
     pills = true,
     icons = {
+      cmd = tools.ui.kind_icons.Terminal,
       config = "󰒓 ",
       debug = "● ",
       event = " ",
       favorite = "  ",
+      ft = tools.ui.kind_icons.File,
       init = "󰒓 ",
       import = " 󰋺  ",
       keys = " 󰥻  ",
       lazy = "󰒲  ",
+      loaded = tools.ui.icons.bullet,
+      not_loaded = tools.ui.icons.open_bullet,
+      plugin = tools.ui.kind_icons.Module,
       runtime = "  ",
       require = "󰢱  ",
       source = " ",
       start = " ",
+      task = tools.ui.icons.ok,
       list = { "■", "□", "●", "○", "◆", "◊" },
     },
   },

@@ -1,31 +1,32 @@
 local map = vim.keymap.set
 local del = vim.keymap.del
-local api = vim.api
 
-vim.g.mapleader = " "
+vim.g.mapleader = "m"
 
-map("",  "<S-j>",   "}",        { noremap = true })
-map("",  "<S-k>",   "{",        { noremap = true })
-map("",  "<S-l>",   "<End>",    { noremap = true })
-map("",  "<S-h>",   "<Home>",   { noremap = true })
+map("n",  "<S-j>",       "}",           { remap = false })
+map("n",  "<S-k>",       "{",           { remap = false })
+map("n",  "<A-S-j>",     "]]",          { remap = false })
+map("n",  "<A-S-k>",     "[[",          { remap = false })
+map("n",  "<S-l>",       "$",           { remap = false })
+map("n",  "<S-h>",       "^",           { remap = false })
 
-map("",   "<C-j>",   ":wincmd j<CR>")
-map("",   "<C-k>",   ":wincmd k<CR>")
-map("",   "<C-l>",   ":wincmd l<CR>")
-map("",   "<C-h>",   ":wincmd h<CR>")
+map("n",  "<leader>nl",  "<S-j>",       { remap = false })
+map("n",  "<leader>sv",  "<C-w>v",      { desc = "[S]plit [V]ertically" })
+map("n",  "<leader>sh",  "<C-w>s",      { desc = "[S]plit [H]orizontally" })
+map("n",  "<leader>se",  "<C-w>=",      { desc = "Make Split Windows [=]equal width" })
+map("n",  "<leader>sx",  ":close<CR>",  { desc = "Current [S]plit [X]Close" })
 
-api.nvim_create_autocmd('TextYankPost', {
-  group = api.nvim_create_augroup('custom-highlight-yank', { clear = false }),
-  callback = function()
-    vim.highlight.on_yank()
-  end
-})
+map(
+  "n",  
+  "<leader>pm", 
+  "<cmd>Lazy<cr>", 
+  { desc = "Open [p]ackage [m]anager" }
+)
 
-api.nvim_create_autocmd('TermOpen', {
-  group = api.nvim_create_augroup('custom-term-open', { clear = true }),
-  callback = function()
-    vim.opt.number = false
-    vim.opt.relativenumber = false
-  end
-})
+map(
+  "n",
+  "<leader>s",
+  [[:%s/<C-r><C-w>//gI<Left><Left><Left>]],
+  { desc = "open %s//gI with cword" }
+)
 

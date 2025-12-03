@@ -1,5 +1,9 @@
 local o = vim.o
 
+vim.cmd.filetype("on")
+vim.cmd.filetype("plugin on")
+
+
 -- [[ appearance ]]
 o.numberwidth       = 4             -- width of number line
 o.wrap              = false
@@ -19,9 +23,9 @@ vim.opt.undofile    = true
 o.autoindent        = true          -- insert indents automatically
 o.smartindent       = true          -- autoidenting when starting a new line
 o.smarttab          = true          -- indent by shiftwidth if in leading whitespace
+o.expandtab         = true          -- expand tabs out to spaces
 o.shiftwidth        = 2             -- size of indentation
 o.softtabstop       = 2
-o.expandtab         = true          -- expand tabs out to spaces
 
 -- [[ search ]]
 o.smartcase         = true          -- ignores casing when pattern is all lowercase
@@ -30,16 +34,4 @@ o.incsearch         = true          -- highlight patterns during typing
 
 -- [[ gui options ]]
 o.guicursor         = "n-v-c-ve:block,i-ci:hor20"
-
--- [[ neovide configuration ]]
-local g = vim.g
-if vim.g.neovide then
-  g.neovide_cursor_unfocused_outline_width  = 0.125
-  g.neovide_cursor_short_animation_length   = 0.01
-  g.neovide_cursor_animation_length         = 0.03
-  g.neovide_cursor_trail_size               = 1.0
-  g.neovide_refresh_rate                    = 165
-  g.neovide_fullscreen                      = true
-  g.neovide_scale_factor                    = 0.8
-end
-
+o.scrolloff         = 999

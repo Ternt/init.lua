@@ -1,3 +1,5 @@
+require('globals')
 require('opts')
 require('maps')
 require('pkgs')
+require('aucmd')
