@@ -30,21 +30,21 @@ C.setup()
 vim.api.nvim_create_user_command('CBuildBatch', 
   function()
     local opts = C.opts
-    local build_script_path = opts.build_script_path
+    local build_script_path = "\"" .. opts.build_script_path .. "\""
     vim.api.nvim_cmd({ cmd = "!", args = {build_script_path}}, {})
   end, { nargs = 0 })
 
 vim.api.nvim_create_user_command('CRunExe', 
   function()
     local opts = C.opts
-    local exe_path = vim.fs.joinpath(opts.build_folder_path, opts.exe_name)
+    local exe_path = "\"" .. vim.fs.joinpath(opts.build_folder_path, opts.exe_name) .. "\""
     vim.api.nvim_cmd({ cmd = "!", args = {exe_path}}, {})
   end, { nargs = 0 })
 
 vim.api.nvim_create_user_command('CDebug', 
   function()
     local opts = C.opts
-    local exe_path = vim.fs.joinpath(opts.build_folder_path, opts.exe_name)
+    local exe_path = "\"" .. vim.fs.joinpath(opts.build_folder_path, opts.exe_name) .. "\""
     vim.api.nvim_cmd({ cmd = "!", args = {"raddbg", exe_path}}, {})
   end, { nargs = 0 })
 

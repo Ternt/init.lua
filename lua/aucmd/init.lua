@@ -19,33 +19,6 @@ aucmd('BufEnter', {
   desc = "Set root dir and initialize version control branch",
 })
 
-aucmd("BufEnter", {
-  group = grp,
-  callback = function()
-    vim.api.nvim_set_option_value("formatoptions", "2cjnpqrt", {})
-
-    vim.opt.formatlistpat:append([[\|^\s*\w\+[\]:.)}\t ]\s\+]]) -- Lettered lists
-    vim.opt.formatlistpat:append([[\|^\s*>\s]]) -- Markdown blockquotes
-
-    -- Dynamically append commentstring-based pattern
-    local commentstring = vim.bo.commentstring:match("^(.*)%%s$")
-    if commentstring then
-      vim.opt.formatlistpat:append([[\|^\s*]] .. commentstring .. [[\s*]])
-    end
-
-    local ft = get_opt("filetype", {})
-    aucmd_fn.set_indent(ft)
-    -- aucmd_fn.set_textwidth(ft)
-  end,
-  desc = "Set options for formatting",
-})
-
-aucmd("BufWinEnter", {
-  group = grp,
-  command = "silent! loadview",
-  desc = "Restore view settings",
-})
-
 aucmd("LspAttach", {
   desc = "Configure LSP keymaps",
   callback = function(args)
@@ -68,7 +41,6 @@ aucmd('TermOpen', {
     vim.opt.relativenumber = false
   end
 })
-
 
 ---- During editing
 edit_grp = augrp("Editing", { clear = true })
@@ -95,13 +67,6 @@ vim.api.nvim_create_autocmd("VimResized", {
   command = [[tabdo wincmd =]],
 })
 
-
 ---- Upon leaving a buffer
 leave_grp = augrp("Leaving", { clear = true })
-
-aucmd("BufWinLeave", {
-  group = leave_grp,
-  command = "silent! mkview",
-  desc = "Create view settings",
-})
 
