@@ -11,6 +11,15 @@ map({ "n", "v" }, "<A-S-k>",    "[[",    { noremap = true })
 map({ "n", "v" }, "<S-l>",      "$",     { noremap = true })
 map({ "n", "v" }, "<S-h>",      "_",     { noremap = true })
 
+map("n", "<A-j>", ":m .+1<CR>==",     { noremap = true })
+map("n", "<A-k>", ":m .-2<CR>==",     { noremap = true })
+map("v", "<A-j>", ":m '>+1<CR>gv=gv", { noremap = true })
+map("v", "<A-k>", ":m '<-2<CR>gv=gv", { noremap = true })
+
+map("n",  "<leader>wk",  "<C-w>k",      {  })
+map("n",  "<leader>wj",  "<C-w>j",      {  })
+map("n",  "<leader>wl",  "<C-w>l",      {  })
+map("n",  "<leader>wh",  "<C-w>h",      {  })
 map("n",  "<leader>sv",  "<C-w>v",      { desc = "[S]plit [V]ertically" })
 map("n",  "<leader>sh",  "<C-w>s",      { desc = "[S]plit [H]orizontally" })
 map("n",  "<leader>se",  "<C-w>=",      { desc = "Make Split Windows [=]equal width" })
@@ -40,6 +49,7 @@ map(
   { desc = "open %s//gI with cword" }
 )
 
+map("n", "yp", "yyp", { noremap = true, desc = "Duplicate line" })
 -- map("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate line and comment original" })
 -- map("v", "yc", function()
 --   local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)

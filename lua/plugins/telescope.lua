@@ -36,7 +36,10 @@ return   {
       })
     end)
 
-    map("n",  "<leader>tf",   "<cmd>Telescope find_files<cr>")
+    map("n",  "<leader>tf",  "<cmd>Telescope find_files<cr>")
+    map("n",  "<leader>ts",  "<cmd>Telescope grep_string<cr>")
+    map("n",  "<leader>tg",  "<cmd>Telescope live_grep<cr>")
+    map("n",  "<leader>tb",  "<cmd>Telescope buffers<cr>")
     map("n",  "<C-v>",       "<cmd>Telescope select_vertical<cr>")
   end
 }

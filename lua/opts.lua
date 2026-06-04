@@ -3,10 +3,9 @@ local o = vim.o
 vim.cmd.filetype("on")
 vim.cmd.filetype("plugin on")
 
-
 -- [[ appearance ]]
 o.numberwidth       = 4             -- width of number line
-o.wrap              = false
+o.wrap              = false 
 o.termguicolors     = true
 
 -- [[ text editing ]]
