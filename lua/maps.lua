@@ -1,29 +1,35 @@
+local helper = require("helper")
 local map = vim.keymap.set
 local del = vim.keymap.del
 
 vim.g.mapleader = "m"
 
 map({ "n", "v" }, "<leader>nl", "<S-j>", { noremap = true })
-map({ "n", "v" }, "<S-j>",      "}",     { noremap = true })
-map({ "n", "v" }, "<S-k>",      "{",     { noremap = true })
-map({ "n", "v" }, "<A-S-j>",    "]]",    { noremap = true })
-map({ "n", "v" }, "<A-S-k>",    "[[",    { noremap = true })
 map({ "n", "v" }, "<S-l>",      "$",     { noremap = true })
 map({ "n", "v" }, "<S-h>",      "_",     { noremap = true })
 
+-- scope jump
+map({ "n", "x" }, "<S-j>", function() helper.scope_jump(1)  end, { noremap = true, desc = "Jump to next scope" })
+map({ "n", "x" }, "<S-k>", function() helper.scope_jump(-1) end, { noremap = true, desc = "Jump to previous scope" })
+
+-- jump to next/prev empty line
+map({ "n", "x" }, "<A-S-j>", "}",  { noremap = true, desc = "Jump to next empty line" })
+map({ "n", "x" }, "<A-S-k>", "{",  { noremap = true, desc = "Jump to prev empty line" })
+
+-- line moving (pick new keys since Alt is taken)
 map("n", "<A-j>", ":m .+1<CR>==",     { noremap = true })
 map("n", "<A-k>", ":m .-2<CR>==",     { noremap = true })
 map("v", "<A-j>", ":m '>+1<CR>gv=gv", { noremap = true })
 map("v", "<A-k>", ":m '<-2<CR>gv=gv", { noremap = true })
 
-map("n",  "<leader>wk",  "<C-w>k",      {  })
-map("n",  "<leader>wj",  "<C-w>j",      {  })
-map("n",  "<leader>wl",  "<C-w>l",      {  })
-map("n",  "<leader>wh",  "<C-w>h",      {  })
-map("n",  "<leader>sv",  "<C-w>v",      { desc = "[S]plit [V]ertically" })
-map("n",  "<leader>sh",  "<C-w>s",      { desc = "[S]plit [H]orizontally" })
-map("n",  "<leader>se",  "<C-w>=",      { desc = "Make Split Windows [=]equal width" })
-map("n",  "<leader>sx",  ":close<CR>",  { desc = "Current [S]plit [X]Close" })
+map("n",  "<leader>wk",  "<C-w>k",     {  })
+map("n",  "<leader>wj",  "<C-w>j",     {  })
+map("n",  "<leader>wl",  "<C-w>l",     {  })
+map("n",  "<leader>wh",  "<C-w>h",     {  })
+map("n",  "<leader>se",  "<C-w>=",     { desc = "Make Split Windows [=]equal width" })
+map("n",  "<leader>sx",  ":close<CR>", { desc = "Current [S]plit [X]Close" })
+map("n",  "<leader>sv", function() helper.smart_split(true)  end, { desc = "[S]plit [V]ertically" })
+map("n",  "<leader>sh", function() helper.smart_split(false) end, { desc = "[S]plit [H]orizontally" })
 
 map("n",  "G",  "Gzz",  { noremap = true, desc = "Go to bottom and center" })
 map("n",  "n",  "nzz",  { noremap = true })
@@ -50,25 +56,16 @@ map(
 )
 
 map("n", "yp", "yyp", { noremap = true, desc = "Duplicate line" })
--- map("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate line and comment original" })
--- map("v", "yc", function()
---   local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
---   vim.api.nvim_feedkeys(esc, "x", false)
---
---   local start_line = vim.fn.line("'<")
---   local end_line = vim.fn.line("'>")
---
---   vim.cmd(start_line .. "," .. end_line .. "yank")
---   vim.cmd((end_line + 1) .. "put")
---
---   vim.api.nvim_feedkeys("gv", "n", false)
---   vim.api.nvim_feedkeys("gc", "v", false)
--- end, { noremap = true, desc = "Duplicate selection and comment original" })
 
-map("n", "<leader>dd", function()
-  if vim.wo.diff then
-    vim.cmd("diffoff!")
-  else
-    vim.cmd("windo diffthis")
-  end
-end, { noremap = true, desc = "Toggle diff mode" })
+vim.keymap.set(
+  "n", 
+  "gef", 
+  helper.generate_enum_flags,
+  { desc = "[g]enerate [e]num [f]lags" }
+)
+vim.keymap.set(
+  "n", 
+  "gfd", 
+  helper.expand_function_declaration, 
+  { desc = "[g]enerate [f]unction [d]efinition" }
+)

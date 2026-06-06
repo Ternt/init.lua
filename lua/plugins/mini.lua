@@ -13,8 +13,8 @@ return {
           indent_at_cursor = false,
         },
         mappings = {
-          goto_top = '<A-k>',
-          goto_bottom = '<A-j>',
+          goto_top = '',
+          goto_bottom = '',
         },
         symbol = '╎'
       })

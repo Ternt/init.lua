@@ -9,6 +9,8 @@ enter_grp = augrp("Entering", { clear = true })
 aucmd('BufEnter', {
   group = enter_grp,
   callback = function()
+    if vim.bo.filetype == "oil" then return end
+
     local path = vim.api.nvim_buf_get_name(0)
     local root = tools.get_path_root(path)
 
@@ -48,6 +50,8 @@ edit_grp = augrp("Editing", { clear = true })
 vim.api.nvim_create_autocmd({ "BufEnter", "CursorMoved", "CursorHoldI" }, {
   group = edit_grp,
   callback = function()
+    if vim.bo.filetype == "oil" then return end
+
     local win_h = vim.api.nvim_win_get_height(0)
     local off = math.min(vim.o.scrolloff, math.floor(win_h / 2))
     local dist = vim.fn.line("$") - vim.fn.line(".")
@@ -69,4 +73,40 @@ vim.api.nvim_create_autocmd("VimResized", {
 
 ---- Upon leaving a buffer
 leave_grp = augrp("Leaving", { clear = true })
+
+
+---- Automatic text generation for specific files
+local top_message = os.date("// Created: %Y-%m-%d %H:%M:%S");
+
+aucmd("BufNewFile", {
+  group = augrp("copyright", { clear = true }),
+  pattern = "*.c",
+  callback = function()
+    vim.api.nvim_buf_set_lines(0, 0, 0, false, { top_message, "" })
+  end,
+  desc = "Insert creation timestamp on new .h files",
+})
+
+aucmd("BufNewFile", {
+  group = augrp("new-h-file", { clear = true }),
+  pattern = "*.h",
+  callback = function()
+    local filename = vim.fn.expand("%:t:r")
+    local guard = filename:upper():gsub("[^A-Z0-9]", "_") .. "_H"
+    local lines = {
+      top_message,
+      "",
+      "#ifndef " .. guard,
+      "#define " .. guard,
+      "",
+      "",
+      "",
+      "#endif // " .. guard,
+    }
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    vim.api.nvim_win_set_cursor(0, { 6, 0 })
+  end,
+  desc = "Insert timestamp and header guards on new .h files",
+})
+
 

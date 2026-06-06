@@ -60,4 +60,3 @@ local map = vim.keymap.set
 map('n', '<F5>',  '<cmd>CBuildBatch<CR>', { noremap = true })
 map('n', '<F9>',  '<cmd>CRunExe<CR>',     { noremap = true })
 map('n', '<F11>', '<cmd>CDebug<CR>',      { noremap = true })
-
