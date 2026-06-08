@@ -41,6 +41,6 @@ return {
       ["@function.macro"]           = { fg = "#d96759" },
     },
   },
-  init = function() vim.cmd.colorscheme("techbase-hc") end,
+  init = function() vim.cmd.colorscheme("techbase") end,
 }
 

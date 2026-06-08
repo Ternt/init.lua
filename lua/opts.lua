@@ -34,3 +34,4 @@ o.incsearch         = true          -- highlight patterns during typing
 -- [[ gui options ]]
 o.guicursor         = "n-v-c-ve:block,i-ci:hor20"
 o.scrolloff         = 0
+

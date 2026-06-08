@@ -1,5 +1,5 @@
 return {
-  "https://github.com/ggandor/leap.nvim",
+  "https://codeberg.org/andyg/leap.nvim",
   config = function()
     local map = vim.keymap.set
 

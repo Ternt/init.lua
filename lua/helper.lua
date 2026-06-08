@@ -7,8 +7,8 @@ local function make_buf_utils(bufnr, total)
     return vim.api.nvim_buf_get_lines(bufnr, r - 1, r, false)[1] or ""
   end
 
-  local function is_blank(r)      return get_line(r):match("^%s*$") ~= nil end
-  local function is_open_brace(r) return get_line(r):match("^%s*{%s*$") ~= nil end
+  local function is_blank(r)       return get_line(r):match("^%s*$") ~= nil end
+  local function is_open_brace(r)  return get_line(r):match("^%s*{%s*$") ~= nil end
   local function is_close_brace(r) return get_line(r):match("^%s*}") ~= nil end
 
   local function indent(r)
@@ -48,8 +48,8 @@ local function make_buf_utils(bufnr, total)
       elseif is_close_brace(i) then
         return false
       else
-        if is_comment(i)              then return false end
-        if get_line(i):match(";%s*$") then return false end
+        if is_comment(i)               then return false end
+        if get_line(i):match(";%s*$")  then return false end
         i = i + 1
       end
     end
@@ -85,14 +85,14 @@ local function make_buf_utils(bufnr, total)
   end
 
   return {
-    get_line          = get_line,
-    is_blank          = is_blank,
-    is_open_brace     = is_open_brace,
-    is_close_brace    = is_close_brace,
-    indent            = indent,
-    first_nonblank    = first_nonblank,
-    is_comment        = is_comment,
-    is_signature      = is_signature,
+    get_line            = get_line,
+    is_blank            = is_blank,
+    is_open_brace       = is_open_brace,
+    is_close_brace      = is_close_brace,
+    indent              = indent,
+    first_nonblank      = first_nonblank,
+    is_comment          = is_comment,
+    is_signature        = is_signature,
     find_matching_close = find_matching_close,
     find_matching_open  = find_matching_open,
   }
@@ -100,16 +100,23 @@ end
 
 -- scope_jump
 
-function M.scope_jump(direction)
+function M.scope_jump(direction, dry_run)
   local bufnr = 0
   local row   = vim.api.nvim_win_get_cursor(0)[1]
   local total = vim.api.nvim_buf_line_count(bufnr)
   local u     = make_buf_utils(bufnr, total)
 
+  local function jump(r)
+    if dry_run then return r end
+    vim.api.nvim_win_set_cursor(0, { r, u.indent(r) or 0 })
+  end
+
   if vim.fn.expand("%:e") == "h" then
-    local key = direction == 1 and "}" or "{"
-    vim.api.nvim_feedkeys(key, "n", false)
-    return
+    if not dry_run then
+      local key = direction == 1 and "}" or "{"
+      vim.api.nvim_feedkeys(key, "n", false)
+    end
+    return nil
   end
 
   if direction == 1 then
@@ -131,25 +138,21 @@ function M.scope_jump(direction)
 
     local i = row + 1
     while i <= total do
+      if u.is_comment(i)  then i = i + 1 goto continue end
       if u.is_open_brace(i) then
         if cur_close and i > cur_close then
           local after = u.first_nonblank(cur_close + 1, 1)
           if after and u.is_open_brace(after) then
             local inside = u.first_nonblank(after + 1, 1)
-            if inside then
-              vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-              return
-            end
+            if inside then return jump(inside) end
           elseif after then
-            vim.api.nvim_win_set_cursor(0, { after, u.indent(after) or 0 })
-            return
+            return jump(after)
           end
         end
 
         local inside = u.first_nonblank(i + 1, 1)
         if inside and (not cur_close or inside < cur_close) then
-          vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-          return
+          return jump(inside)
         end
 
         local close = u.find_matching_close(i)
@@ -162,47 +165,40 @@ function M.scope_jump(direction)
         while after <= total do
           if u.is_blank(after) then
             after = after + 1
+          elseif u.is_comment(after) then
+            after = after + 1
           elseif u.is_signature(after) then
             while after <= total and not u.is_open_brace(after) do
               after = after + 1
             end
             if after <= total and u.is_open_brace(after) then
-              local close = u.find_matching_close(after)
+              local close  = u.find_matching_close(after)
               local inside = u.first_nonblank(after + 1, 1)
-              -- if there's content before the close brace, jump there
               if inside and (not close or inside < close) then
-                vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-                return
+                return jump(inside)
               end
-              -- empty scope: land on the blank line inside if there is one,
-              -- otherwise land on the open brace itself
               if close and close > after + 1 then
-                vim.api.nvim_win_set_cursor(0, { after + 1, 0 })
+                return jump(after + 1)
               else
-                vim.api.nvim_win_set_cursor(0, { after, 0 })
+                return jump(after)
               end
-              return
             end
           elseif u.is_open_brace(after) then
-          elseif u.is_open_brace(after) then
-            local close = u.find_matching_close(after)
+            local close  = u.find_matching_close(after)
             local inside = u.first_nonblank(after + 1, 1)
             if inside and (not close or inside < close) then
-              vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-              return
+              return jump(inside)
             end
             if close and close > after + 1 then
-              vim.api.nvim_win_set_cursor(0, { after + 1, 0 })
+              return jump(after + 1)
             else
-              vim.api.nvim_win_set_cursor(0, { after, 0 })
+              return jump(after)
             end
-            return
           else
-            vim.api.nvim_win_set_cursor(0, { after, u.indent(after) or 0 })
-            return
+            return jump(after)
           end
         end
-        return
+        return nil
       end
 
       i = i + 1
@@ -212,13 +208,13 @@ function M.scope_jump(direction)
   else
     local i = row - 1
     while i >= 1 do
+      if u.is_comment(i)   then i = i - 1 goto continue end
       if u.is_close_brace(i) then
         local open = u.find_matching_open(i)
         if open then
           local inside = u.first_nonblank(open + 1, 1)
           if inside and inside < row then
-            vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-            return
+            return jump(inside)
           end
           i = open - 1
           goto continue
@@ -228,8 +224,7 @@ function M.scope_jump(direction)
       if u.is_open_brace(i) then
         local inside = u.first_nonblank(i + 1, 1)
         if inside and inside < row then
-          vim.api.nvim_win_set_cursor(0, { inside, u.indent(inside) or 0 })
-          return
+          return jump(inside)
         end
         i = i - 1
         goto continue
@@ -239,6 +234,8 @@ function M.scope_jump(direction)
       ::continue::
     end
   end
+
+  return nil
 end
 
 -- generate_enum_flags
@@ -298,31 +295,31 @@ M.compiler_hints = {
 }
 
 M.return_type_defaults = {
-  ["^void$"]     = nil,
-  ["^[Bb]ool$"]  = "0",
-  ["^b%d+$"]     = "0",
-  ["^int$"]      = "0",
-  ["^[Ss]%d+$"]  = "0",
-  ["^i%d+$"]     = "0",
-  ["^int%d+_t$"] = "0",
-  ["^long$"]     = "0",
-  ["^short$"]    = "0",
-  ["^char$"]     = "0",
-  ["^[Uu]%d+$"]  = "0",
+  ["^void$"]      = nil,
+  ["^[Bb]ool$"]   = "0",
+  ["^b%d+$"]      = "0",
+  ["^int$"]       = "0",
+  ["^[Ss]%d+$"]   = "0",
+  ["^i%d+$"]      = "0",
+  ["^int%d+_t$"]  = "0",
+  ["^long$"]      = "0",
+  ["^short$"]     = "0",
+  ["^char$"]      = "0",
+  ["^[Uu]%d+$"]   = "0",
   ["^uint%d+_t$"] = "0",
-  ["^unsigned$"] = "0",
-  ["^size_t$"]   = "0",
-  ["^float$"]    = "0.f",
-  ["^double$"]   = "0.0",
-  ["^[Ff]%d+$"]  = "0.f",
-  ["^String"]    = "{0}",
-  ["^char%s*%*"] = "0",
-  ["[%*%[]"]     = "0",
-  ["^%u"]        = "{0}",
+  ["^unsigned$"]  = "0",
+  ["^size_t$"]    = "0",
+  ["^float$"]     = "0.f",
+  ["^double$"]    = "0.0",
+  ["^[Ff]%d+$"]   = "0.f",
+  ["^String"]     = "{0}",
+  ["^%u"]         = "{0}",
 }
 
 local function get_default_for_type(type_str)
   local t = type_str:match("^%s*(.-)%s*$")
+  -- any pointer type (void *, U8 *, etc.) always gets 0
+  if t:match("%*") then return "0" end
   for pattern, default in pairs(M.return_type_defaults) do
     if t:match(pattern) then return default end
   end
@@ -369,6 +366,7 @@ function M.expand_function_declaration()
     end
 
     -- remainder is now:  return_type func_name(params)
+    -- may contain pointers e.g. "void *os_memory_reserve(U64 size)"
     local params_start = remainder:find("%b()")
     if not params_start then
       vim.notify("Could not find parameter list", vim.log.levels.WARN)
@@ -377,33 +375,41 @@ function M.expand_function_declaration()
 
     local before_params = remainder:sub(1, params_start - 1):match("^(.-)%s*$")
     local params        = remainder:match("%b()")
-    local ret_type, func_name = before_params:match("^(.-)%s+([%w_]+)%s*$")
+
+    -- func_name is the last word token before '('
+    -- everything before it (including any trailing *) is the return type
+    local ret_type, func_name = before_params:match("^(.-)%s*%*?%s*([%w_]+)%s*$")
+
+    -- if there was a * between return type and name, re-attach it to the type
+    if before_params:match("%*") and ret_type and not ret_type:match("%*%s*$") then
+      ret_type = ret_type:match("^(.-)%s*$") .. " *"
+    end
 
     if not ret_type or not func_name then
       vim.notify("Could not parse return type / function name", vim.log.levels.WARN)
       return
     end
 
-    -- build split signature
     local spec_prefix = #specifiers > 0 and (table.concat(specifiers, " ") .. " ") or ""
 
-    local new_lines = {}
-    table.insert(new_lines, spec_prefix .. ret_type)   -- "internal OS_Handle"
-    table.insert(new_lines, func_name .. params)        -- "os_file_open(...)"
+    local new_lines   = {}
+    local sw          = vim.api.nvim_get_option_value("shiftwidth", { buf = bufnr })
+    local indent_str  = string.rep(" ", sw)
+
+    table.insert(new_lines, spec_prefix .. ret_type)  -- "internal void *"
+    table.insert(new_lines, func_name .. params)       -- "os_memory_reserve(U64 size)"
     table.insert(new_lines, "{")
-    local sw = vim.api.nvim_get_option_value("shiftwidth", { buf = bufnr })
-    local indent_str = string.rep(" ", sw)
 
     local default = get_default_for_type(ret_type)
     if default ~= nil then
       local decl_type, decl_stars = ret_type:match("^(.-)(%s*%*+%s*)$")
       if decl_stars then
-        table.insert(new_lines, "  " .. decl_type .. decl_stars .. "result = " .. default .. ";")
+        table.insert(new_lines, indent_str .. decl_type .. decl_stars .. "result = " .. default .. ";")
       else
-        table.insert(new_lines, "  " .. ret_type .. " result = " .. default .. ";")
+        table.insert(new_lines, indent_str .. ret_type .. " result = " .. default .. ";")
       end
       table.insert(new_lines, indent_str)
-      table.insert(new_lines, "  return result;")
+      table.insert(new_lines, indent_str .. "return result;")
     end
 
     table.insert(new_lines, "}")
@@ -435,6 +441,102 @@ function M.smart_split(vertical)
       vim.cmd("edit " .. vim.fn.fnameescape(partner_path))
     end
   end
+end
+
+function M.get_enclosing_signature(bufnr, row, total)
+  local u = make_buf_utils(bufnr, total)
+
+  local control_flow = {
+    "^if[%s%(]", "^for[%s%(]", "^while[%s%(]",
+    "^switch[%s%(]", "^else", "^do[%s{]",
+  }
+
+  local function try_get_sig(open_brace)
+    local sig_lines = {}
+    local i = open_brace - 1
+    while i >= 1 do
+      local l = u.get_line(i)
+      if u.is_blank(i)       then break end
+      if u.is_close_brace(i) then break end
+      if u.is_open_brace(i)  then break end
+      if l:match("^%s*#")    then break end  -- stop at any preprocessor line
+      if l:match("\\%s*$")   then break end  -- stop at macro continuation
+      if u.is_comment(i)     then break end
+      if l:match(";%s*$")    then break end
+      table.insert(sig_lines, 1, l:match("^%s*(.-)%s*$"))
+      i = i - 1
+    end
+
+    if #sig_lines == 0 then return nil end
+
+    local text = table.concat(sig_lines, " ")
+    local trimmed = text:match("^%s*(.-)%s*$")
+
+    if not trimmed:match("%(") then return nil end
+    if not trimmed:match("%)") then return nil end
+
+    local control_flow = {
+      "^if[%s%(]", "^for[%s%(]", "^while[%s%(]",
+      "^switch[%s%(]", "^else", "^do[%s{]",
+      "^if%(", "^for%(", "^while%(", "^switch%(",
+    }
+    for _, pat in ipairs(control_flow) do
+      if trimmed:match(pat) then return nil end
+    end
+
+    local before_paren = trimmed:match("^(.-)%s*%(")
+    if not before_paren then return nil end
+    if not before_paren:match("[%w_]+%s*$") then return nil end
+
+    for _, spec in ipairs(M.storage_class_specifiers) do
+      trimmed = trimmed:gsub("^" .. spec .. "%s+", "")
+    end
+    for _, hint in ipairs(M.compiler_hints) do
+      trimmed = trimmed:gsub("^" .. hint .. "%s+", "")
+    end
+
+    return { text = trimmed, line = open_brace - 1 }
+  end
+
+  local depth = 0
+  local i = row
+  local found = nil
+
+  while i >= 1 do
+    local l = u.get_line(i)
+
+    -- only skip macro continuation lines (ending with \)
+    -- do NOT skip standalone # directives — treat them as opaque stoppers
+    if l:match("\\%s*$") then
+      i = i - 1
+      goto continue
+    end
+
+    -- a standalone preprocessor line is not a brace, just skip it
+    if l:match("^%s*#") then
+      i = i - 1
+      goto continue
+    end
+
+    if u.is_close_brace(i) then
+      depth = depth + 1
+    elseif u.is_open_brace(i) then
+      if depth == 0 then
+        local sig = try_get_sig(i)
+        if sig then
+          found = sig
+          break
+        end
+      else
+        depth = depth - 1
+      end
+    end
+
+    i = i - 1
+    ::continue::
+  end
+
+  return found
 end
 
 return M

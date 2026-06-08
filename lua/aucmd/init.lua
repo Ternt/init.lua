@@ -109,4 +109,27 @@ aucmd("BufNewFile", {
   desc = "Insert timestamp and header guards on new .h files",
 })
 
+-- jump target indicator
+do
+  local ns = vim.api.nvim_create_namespace("jump_target")
+
+  aucmd({ "CursorMoved", "CursorMovedI", "BufEnter" }, {
+    group = augrp("jump-target-indicator", { clear = true }),
+    callback = function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      local row   = vim.api.nvim_win_get_cursor(0)[1]
+
+      vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+
+      local target = require("helper").scope_jump(1, true)
+      if not target or target == row then return end
+
+      vim.api.nvim_buf_set_extmark(bufnr, ns, target - 1, 0, {
+        virt_text     = { { " J", "Comment" } },
+        virt_text_pos = "eol",
+        priority      = 100,
+      })
+    end,
+  })
+end
 
