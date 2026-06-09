@@ -35,3 +35,8 @@ o.incsearch         = true          -- highlight patterns during typing
 o.guicursor         = "n-v-c-ve:block,i-ci:hor20"
 o.scrolloff         = 0
 
+-- [[ shell options ]]
+o.shell = 'pwsh -NoLogo'
+o.shellcmdflag = '-NoLogo -ExecutionPolicy RemoteSigned -Command'
+o.shellquote = ''
+o.shellxquote = ''

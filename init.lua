@@ -1,4 +1,4 @@
-require('globals')
+require('helpers')
 require('opts')
 require('maps')
 require('pkgs')
