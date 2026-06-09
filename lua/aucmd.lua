@@ -92,15 +92,27 @@ aucmd({ "CursorMoved", "CursorMovedI", "BufEnter" }, {
     helpers.show_cursor_diagnostic()
   end,
 })
+
+---- Automatic text generation for specific files
+local top_message = os.date("// %Y-%m-%d");
+
+aucmd("BufNewFile", {
+  group = augrp("copyright", { clear = true }),
+  pattern = "*.c",
+  callback = function()
+    vim.api.nvim_buf_set_lines(0, 0, 0, false, { top_message, "" })
+  end,
+  desc = "Insert creation timestamp on new .h files",
+})
+
 aucmd("BufNewFile", {
   group = augrp("new-h-file", { clear = true }),
   pattern = "*.h",
   callback = function()
-    local filename  = vim.fn.expand("%:t:r")
-    local guard     = filename:upper():gsub("[^A-Z0-9]", "_") .. "_H"
-    local timestamp = os.date("// Created: %Y-%m-%d %H:%M:%S")
+    local filename = vim.fn.expand("%:t:r")
+    local guard = filename:upper():gsub("[^A-Z0-9]", "_") .. "_H"
     local lines = {
-      timestamp,
+      top_message,
       "",
       "#ifndef " .. guard,
       "#define " .. guard,
