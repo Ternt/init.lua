@@ -18,6 +18,55 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
+
+  {
+    "echasnovski/mini.icons",
+    version = false,
+    config = function()
+      local mini = require("mini.icons")
+
+      local make_icon_tbl = function(category)
+        local res = {}
+        local postfix = "  "
+
+        -- get list of keys, access keys, modify them, then store and return
+        -- output format: key = { glyph = "" }
+        for _, name in ipairs(mini.list(category)) do
+          res[name] = { glyph = " " .. mini.get(category, name) .. postfix }
+        end
+
+        return res
+      end
+
+      local default_icon = { glyph = "   " }
+
+      local defaults = make_icon_tbl("default")
+      defaults["extension"] = default_icon
+      defaults["file"] = default_icon
+      defaults["filetype"] = default_icon
+
+      local file_icons = make_icon_tbl("file")
+      file_icons[".zshrc"] = { glyph = " 󰒓  " }
+      file_icons["init.lua"] = { glyph = " 󰢱  ", hl = "MiniIconsAzure" }
+      file_icons["README.md"] = { glyph = "   ", hl = "MiniIconsCyan" }
+      file_icons["lazy"] = default_icon
+
+      local ft_icons = make_icon_tbl("filetype")
+      ft_icons["dosini"] = default_icon
+      ft_icons["text"] = default_icon
+
+      mini.setup({
+        default = defaults,
+        directory = make_icon_tbl("directory"),
+        extension = make_icon_tbl("extension"),
+        -- https://github.com/echasnovski/mini.nvim/issues/1384
+        file = file_icons,
+        filetype = ft_icons,
+        lsp = make_icon_tbl("lsp"),
+      })
+    end,
+  },
+
   { 
     'stevearc/oil.nvim',
     branch = 'master',
@@ -65,19 +114,166 @@ require('lazy').setup({
     "nvim-treesitter/nvim-treesitter",
     branch = 'main',
     build = ":TSUpdate",
-    config = function(_, opts)
-      require('nvim-treesitter').install{ 'c', 'cpp' }
-      require('nvim-treesitter').setup{
-        auto_install = true,
-        sync_install = false,
-        ignore_install = {},
-        highlight = { enable = true },
-        indent = { enable = true },
-        fold = { enable = false },
+    config = function()
+      require('nvim-treesitter').install{ 'c', 'cpp', 'lua' }
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "c", "cpp", "lua" },
+        callback = function()
+          vim.treesitter.start()
+        end,
+      })
+    end,
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      require('nvim-treesitter-textobjects').setup{
+        move = {
+          enable = true,
+          set_jumps = true,
+          goto_next_start = {
+            ["]c"] = "@class.outer",
+            ["]f"] = "@function.outer",
+            ["]a"] = "@parameter.inner",
+          },
+          goto_next_end = {
+            ["]["] = "@class.outer",
+            ["]F"] = "@function.outer",
+          },
+          goto_previous_start = {
+            ["[c"] = "@class.outer",
+            ["[f"] = "@function.outer",
+            ["[a"] = "@parameter.inner",
+          },
+          goto_previous_end = {
+            ["]F"] = "@function.outer",
+            ["[C"] = "@class.outer",
+          },
+        },
+        select = {
+          enable = true,
+          keymaps = {
+            ["iC"] = "@call.inner",
+            ["aC"] = "@call.outer",
+            ["ic"] = "@conditional.inner",
+            ["ac"] = "@conditional.outer",
+            ["if"] = "@function.inner",
+            ["af"] = "@function.outer",
+            ["il"] = "@loop.inner",
+            ["al"] = "@loop.outer",
+          },
+        },
       }
     end,
   },
 
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+    end
+  },
+
+  {
+    "mason-org/mason.nvim",
+    opts = {
+      max_concurrent_installers = 20,
+      ui = {
+        height = 0.8,
+      },
+    },
+  },
+
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = "neovim/nvim-lspconfig",
+    opts = {
+      handlers = {
+        function(name) vim.lsp.enable(name) end,
+      },
+    },
+  },
+
+  {
+    "folke/lazydev.nvim",
+    dependencies = "neovim/nvim-lspconfig",
+    ft = "lua",
+    opts = true,
+  },
+
+  {
+    "j-hui/fidget.nvim",
+    event = "LspAttach",
+    opts = {
+      progress = {
+        suppress_on_insert = true,
+        display = {
+          done_ttl = 2,
+          progress_icon = {
+            pattern = {
+              " 󰫃 ",
+              " 󰫄 ",
+              " 󰫅 ",
+              " 󰫆 ",
+              " 󰫇 ",
+              " 󰫈 ",
+            },
+          },
+          done_style = "Comment",
+          group_style = "Comment",
+          icon_style = "Comment",
+          progress_style = "Comment",
+        },
+      },
+      notification = {
+        window = {
+          border_hl = "Comment",
+          normal_hl = "Comment",
+          winblend = 100,
+          border = "solid",
+          relative = "win",
+        },
+      },
+    },
+  },
+
+  {
+    "Wansmer/symbol-usage.nvim",
+    event = "LspAttach",
+    opts = {
+      text_format = function(symbol)
+        local res = {}
+
+        if symbol.references then
+          local usage = symbol.references == 1 and "reference" or "references"
+          table.insert(
+            res,
+            { ("󰌹  %s %s"):format(symbol.references, usage), "LspCodeLens" }
+          )
+        end
+
+        return res
+      end,
+    },
+  },
+
+  {
+    "chrisgrieser/nvim-various-textobjs",
+    init = function()
+      local map = vim.keymap.set
+      local modes = { "o", "x" }
+      -- indentation
+      map(modes, "ii", function() require("various-textobjs").indentation(true, true) end)
+      map(modes, "ai", function() require("various-textobjs").indentation(false, true) end)
+
+      -- values, e.g. variable assignment
+      map(modes, "iv", function() require("various-textobjs").value(true) end)
+      map(modes, "av", function() require("various-textobjs").value(false) end)
+    end
+  },
 
   {
     'nvim-telescope/telescope.nvim', 
@@ -112,6 +308,13 @@ require('lazy').setup({
           initial_mode = "insert",
         },
         buffers = {
+          theme = 'dropdown',
+          path_display = { "shorten" },
+          previewer = false,
+          prompt_title = "",
+          initial_mode = "normal",
+        },
+        diagnostics = {
           theme = 'dropdown',
           path_display = { "shorten" },
           previewer = false,
@@ -221,36 +424,100 @@ require('lazy').setup({
   {
     'lewis6991/gitsigns.nvim',
     config = function()
-      require('gitsigns').setup({
+      local gs = require("gitsigns")
+      gs.setup{
         signs = {
-          add          = { text = '▎' },
-          change       = { text = '▎' },
-          delete       = { text = '▎' },
-          topdelete    = { text = '▎' },
-          changedelete = { text = '▎' },
+          add = { text = "+" },
+          change = { text = "~" },
+          delete = { text = "_" },
+          topdelete = { text = "‾" },
+          changedelete = { text = "│" },
         },
+        word_diff = false,
         on_attach = function(bufnr)
-          local gs = package.loaded.gitsigns
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
 
-          -- Navigation between hunks
-          vim.keymap.set('n', ']h', gs.next_hunk, { buffer = bufnr, desc = 'Git: next hunk' })
-          vim.keymap.set('n', '[h', gs.prev_hunk, { buffer = bufnr, desc = 'Git: prev hunk' })
+          -- Navigation
+          map("n", "]c", function()
+            if vim.wo.diff then
+              return "]c"
+            end
+            vim.schedule(function()
+              gs.next_hunk()
+            end)
+            return "<Ignore>"
+          end, { expr = true, desc = "next hunk" })
 
-          -- View diff
-          vim.keymap.set('n', '<leader>gd', gs.diffthis, { buffer = bufnr, desc = 'Git: diff file' })
-          vim.keymap.set('n', '<leader>gD', function() gs.diffthis('~') end, { buffer = bufnr, desc = 'Git: diff against last commit' })
+          map("n", "[c", function()
+            if vim.wo.diff then
+              return "[c"
+            end
+            vim.schedule(function()
+              gs.prev_hunk()
+            end)
+            return "<Ignore>"
+          end, { expr = true, desc = "previous hunk" })
 
-          -- Preview hunk in floating window
-          vim.keymap.set('n', '<leader>gh', gs.preview_hunk, { buffer = bufnr, desc = 'Git: preview hunk' })
-
-          -- Stage/reset individual hunks
-          vim.keymap.set('n', '<leader>ghs', gs.stage_hunk, { buffer = bufnr, desc = 'Git: stage hunk' })
-          vim.keymap.set('n', '<leader>ghr', gs.reset_hunk, { buffer = bufnr, desc = 'Git: reset hunk' })
-
-          -- Toggle blame line
-          vim.keymap.set('n', '<leader>gtb', gs.toggle_current_line_blame, { buffer = bufnr, desc = 'Git: toggle blame line' })
-        end
-      })
+          -- Actions
+          map("n", "<leader>hp", gs.preview_hunk, { desc = "preview hunk" })
+          map("n", "<leader>hb", function()
+            gs.blame_line { full = true }
+          end, { desc = "blame hunk" })
+        end,
+      }
     end,
   },
+
+  {
+    "mcauley-penney/techbase.nvim",
+    branch = "main",
+    priority = 1000,
+    opts = {
+      hl_overrides = {
+        Normal                        = { fg = "#e5e5e5", bg = "#1b1b1b" },
+
+        Comment                       = { fg = "#717171" },
+        Keyword                       = { fg = "#cbcbcb" },
+        Function                      = { fg = "#cbcbcb" },
+        Constant                      = { fg = "#cbcbcb" },
+        Operator                      = { fg = "#ababab" },
+        String                        = { fg = "#98abb1" },
+        Number                        = { fg = "#98abb1" },
+        Type                          = { fg = "#ceaf64" },
+
+        ["@string"]                   = { fg = "#98abb1" },
+        ["@string.escape"]            = { fg = "#8aff00" },
+
+        ["@character"]                = { fg = "#98abb1" },
+        ["@character.escape"]         = { fg = "#8aff00" },
+
+        ["@boolean"]                  = { fg = "#98bc80" },
+        ["@number"]                   = { fg = "#98abb1" },
+        ["@number.float"]             = { fg = "#98abb1" },
+
+        ["@constant"]                 = { fg = "#cbcbcb" },
+        ["@constant.macro"]           = { fg = "#d96759" },
+        ["@constant.builtin"]         = { fg = "#d96759" },
+
+        ["@keyword.import"]           = { fg = "#d96759" },
+        ["@keyword.modifier"]         = { fg = "#ababab" },
+        ["@keyword.type"]             = { fg = "#fec746" },
+        ["@keyword.directive"]        = { fg = "#d96759" },
+        ["@keyword.directive.define"] = { fg = "#d96759" },
+
+        ["@type"]                     = { fg = "#cbcbcb" },
+        ["@lsp.type.type"]            = { fg = "#cbcbcb" },
+        ["@lsp.type.typedef"]         = { fg = "#ceaf64" },
+        ["@lsp.type.typeParameter"]   = { fg = "#cbcbcb" },
+        ["@type.builtin"]             = { fg = "#cbcbcb" },
+        ["@type.definition"]          = { fg = "#cbcbcb" },
+        ["@function.macro"]           = { fg = "#d96759" },
+      },
+    },
+    init = function() vim.cmd.colorscheme("techbase") end,
+  }
 })
